@@ -524,6 +524,12 @@ async def main() -> None:
             await callback_query.answer()
             await callback_query.edit_message_text(help_text)
     
+    # Добавляем тестовую команду для проверки обновления
+    @app.on_message(filters.command("test") & filters.chat(config.NOTIFY_CHAT_ID))
+    async def handle_test_command(client, message):
+        """Тестовая команда для проверки обновления"""
+        await message.reply("✅ Обновление успешно! Новые команды работают.")
+    
     # Настраиваем меню команд
     await setup_bot_menu()
 
