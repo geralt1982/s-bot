@@ -48,6 +48,9 @@ class Config:
         # Session settings
         self.SESSION_NAME = os.getenv('SESSION_NAME', 'telegram_bot')
         
+        # Timezone settings
+        self.TIMEZONE = os.getenv('TIMEZONE', 'UTC')
+        
         logger.info("Configuration loaded successfully")
     
     def get_env_str(self, *keys: str) -> Optional[str]:
