@@ -70,3 +70,24 @@ NOTIFY_TEXT_TOTAL_AMOUNT = "\n🎯 Всего: {total_amount}"
 NOTIFY_TEXT_AVAILABLE_AMOUNT = "\n❓ Доступно: {available_amount} ({same_str}{available_percentage}%, обновлено {updated_datetime})\n"
 NOTIFY_TEXT_SOLD_OUT = "\n⏰ Распродано за {sold_out}\n"
 NOTIFY_UPGRADES_TEXT = "🎁 Подарок можно апгрейдить! (ID: <code>{id}</code>)"
+
+def validate_config():
+    """Проверка обязательных параметров конфигурации"""
+    errors = []
+    
+    if not API_ID or API_ID == 0:
+        errors.append("API_ID не задан")
+    
+    if not API_HASH:
+        errors.append("API_HASH не задан")
+    
+    if not BOT_TOKENS:
+        errors.append("BOT_TOKENS не заданы")
+    
+    if not NOTIFY_CHAT_ID or NOTIFY_CHAT_ID == 0:
+        errors.append("NOTIFY_CHAT_ID не задан")
+    
+    if errors:
+        raise ValueError(f"Ошибки конфигурации: {', '.join(errors)}")
+    
+    return True
