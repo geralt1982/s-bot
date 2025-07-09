@@ -7,13 +7,13 @@ WORK_DIRPATH = Path(__file__).parent
 
 # Основные настройки из переменных окружения
 SESSION_NAME = os.getenv("SESSION_NAME", "gifts_monitor")
-API_ID = int(os.getenv("API_ID") or os.getenv("TELEGRAM_API_ID") or "0")
-API_HASH = os.getenv("API_HASH") or os.getenv("TELEGRAM_API_HASH") or ""
+API_ID = int(os.getenv("API_ID", "0"))
+API_HASH = os.getenv("API_HASH", "")
 
 # Токены ботов - читаем из BOT_TOKENS (как в Render)
 BOT_TOKENS = [
     token.strip()
-    for token in (os.getenv("BOT_TOKENS") or os.getenv("BOT_TOKEN") or "").split(",")
+    for token in os.getenv("BOT_TOKENS", "").split(",")
     if token.strip()
 ]
 
@@ -23,8 +23,8 @@ CHECK_UPGRADES_PER_CYCLE = float(os.getenv("CHECK_UPGRADES_PER_CYCLE", "2.0"))
 DATA_FILEPATH = WORK_DIRPATH / "star_gifts.json"
 DATA_SAVER_DELAY = float(os.getenv("DATA_SAVER_DELAY", "2.0"))
 
-NOTIFY_CHAT_ID = int(os.getenv("NOTIFY_CHAT_ID") or "0")
-NOTIFY_UPGRADES_CHAT_ID = int(os.getenv("NOTIFY_UPGRADES_CHAT_ID") or "0") if os.getenv("NOTIFY_UPGRADES_CHAT_ID") else None
+NOTIFY_CHAT_ID = int(os.getenv("NOTIFY_CHAT_ID", "0"))
+NOTIFY_UPGRADES_CHAT_ID = int(os.getenv("NOTIFY_UPGRADES_CHAT_ID", "0")) if os.getenv("NOTIFY_UPGRADES_CHAT_ID") else None
 
 NOTIFY_AFTER_STICKER_DELAY = float(os.getenv("NOTIFY_AFTER_STICKER_DELAY", "1.0"))
 NOTIFY_AFTER_TEXT_DELAY = float(os.getenv("NOTIFY_AFTER_TEXT_DELAY", "2.0"))
