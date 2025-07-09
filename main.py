@@ -54,7 +54,8 @@ async def run_bot():
     """Запуск основного бота"""
     try:
         logger.info("🚀 Запуск Telegram Gifts Monitor Bot...")
-        await detector_main()
+        from detector import main as detector_main
+await detector_main()
     except Exception as e:
         logger.error(f"❌ Ошибка в работе бота: {e}")
         # Перезапуск через 30 секунд
