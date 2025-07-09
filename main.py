@@ -9,7 +9,6 @@ import asyncio
 import os
 import threading
 from flask import Flask
-from detector import main as detector_main
 import logging
 
 # Настройка логирования
@@ -55,7 +54,7 @@ async def run_bot():
     try:
         logger.info("🚀 Запуск Telegram Gifts Monitor Bot...")
         from detector import main as detector_main
-await detector_main()
+        await detector_main()
     except Exception as e:
         logger.error(f"❌ Ошибка в работе бота: {e}")
         # Перезапуск через 30 секунд
