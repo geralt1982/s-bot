@@ -1,4 +1,5 @@
-from pyrogram import Client, types
+from pyrogram import Client, types, filters
+from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from httpx import AsyncClient, TimeoutException
 from pytz import timezone as _timezone
 from io import BytesIO
@@ -410,6 +411,122 @@ async def main() -> None:
     else:
         logger.info("Upgrades channel is not set, skipping star gifts upgrades checking")
 
+    # Устанавливаем меню команд для бота
+    async def setup_bot_menu():
+        """Настройка меню команд бота"""
+        try:
+            bot_commands = [
+                {"command": "start", "description": "Запустить бота"},
+                {"command": "stop", "description": "Остановить уведомления"},
+                {"command": "status", "description": "Статус системы"},
+                {"command": "help", "description": "Помощь"}
+            ]
+            
+            await bot_send_request("setMyCommands", {
+                "commands": bot_commands
+            })
+            logger.info("✅ Меню команд бота настроено")
+        except Exception as e:
+            logger.error(f"❌ Ошибка настройки меню: {e}")
+
+    # Добавляем обработчики команд для управления уведомлениями
+    @app.on_message(filters.command("start") & filters.chat(config.NOTIFY_CHAT_ID))
+    async def handle_start_command(client, message):
+        """Запуск бота"""
+        welcome_text = """🎁 Telegram Gifts Monitor Bot
+        
+🔍 Бот мониторит канал @gifts_detector
+📨 Отправляет интенсивные уведомления при новых подарках
+⚡ Работает 24/7
+
+Используйте команды из меню внизу для управления"""
+        
+        # Создаем клавиатуру с кнопками
+        keyboard = InlineKeyboardMarkup([
+            [InlineKeyboardButton("📊 Статус", callback_data="status")],
+            [InlineKeyboardButton("🛑 Остановить", callback_data="stop")],
+            [InlineKeyboardButton("❓ Помощь", callback_data="help")]
+        ])
+        
+        await message.reply(welcome_text, reply_markup=keyboard)
+    
+    @app.on_message(filters.command("stop") & filters.chat(config.NOTIFY_CHAT_ID))
+    async def handle_stop_command(client, message):
+        """Остановка интенсивных уведомлений"""
+        if intensive_notifier.stop_notifications():
+            await message.reply("🛑 Интенсивные уведомления остановлены")
+        else:
+            await message.reply("ℹ️ Уведомления не активны")
+    
+    @app.on_message(filters.command("status") & filters.chat(config.NOTIFY_CHAT_ID))
+    async def handle_status_command(client, message):
+        """Статус системы уведомлений"""
+        status = intensive_notifier.get_status()
+        status_text = f"""📊 Статус системы:
+        
+🔄 Активность: {'🟢 Активен' if status['is_active'] else '🔴 Неактивен'}
+📨 Уведомления: {status['current_notifications']}/{status['max_notifications']}
+⏱️ Интервал: {status['interval']}с
+🎯 Мониторинг: @gifts_detector"""
+        await message.reply(status_text)
+    
+    @app.on_message(filters.command("help") & filters.chat(config.NOTIFY_CHAT_ID))
+    async def handle_help_command(client, message):
+        """Помощь по командам"""
+        help_text = """🤖 Команды управления:
+        
+/start - Запустить бота и показать информацию
+/stop - Остановить интенсивные уведомления
+/status - Показать статус системы
+/help - Показать это сообщение
+
+🎁 Бот автоматически мониторит канал @gifts_detector и отправляет интенсивные уведомления при новых подарках."""
+        await message.reply(help_text)
+    
+    # Обработчик нажатий на кнопки
+    @app.on_callback_query()
+    async def handle_callback_query(client, callback_query):
+        """Обработка нажатий на кнопки"""
+        # Проверяем, что это наш пользователь
+        if callback_query.from_user.id != config.NOTIFY_CHAT_ID:
+            await callback_query.answer("❌ Доступ запрещен", show_alert=True)
+            return
+        
+        data = callback_query.data
+        
+        if data == "status":
+            status = intensive_notifier.get_status()
+            status_text = f"""📊 Статус системы:
+        
+🔄 Активность: {'🟢 Активен' if status['is_active'] else '🔴 Неактивен'}
+📨 Уведомления: {status['current_notifications']}/{status['max_notifications']}
+⏱️ Интервал: {status['interval']}с
+🎯 Мониторинг: @gifts_detector"""
+            await callback_query.answer()
+            await callback_query.edit_message_text(status_text)
+            
+        elif data == "stop":
+            if intensive_notifier.stop_notifications():
+                await callback_query.answer("🛑 Уведомления остановлены", show_alert=True)
+                await callback_query.edit_message_text("🛑 Интенсивные уведомления остановлены")
+            else:
+                await callback_query.answer("ℹ️ Уведомления не активны", show_alert=True)
+                
+        elif data == "help":
+            help_text = """🤖 Команды управления:
+        
+/start - Запустить бота и показать информацию
+/stop - Остановить интенсивные уведомления
+/status - Показать статус системы
+/help - Показать это сообщение
+
+🎁 Бот автоматически мониторит канал @gifts_detector и отправляет интенсивные уведомления при новых подарках."""
+            await callback_query.answer()
+            await callback_query.edit_message_text(help_text)
+    
+    # Настраиваем меню команд
+    await setup_bot_menu()
+
     logger.info("🔍 Начинаю мониторинг канала @gifts_detector...")
     await detector(
         app = app,
@@ -418,9 +535,4 @@ async def main() -> None:
     )
 
 if __name__ == "__main__":
-    try:
-        asyncio.run(main())
-    except KeyboardInterrupt:
-        pass
-    finally:
-        STAR_GIFTS_DATA.save()
+    asyncio.run(main())
