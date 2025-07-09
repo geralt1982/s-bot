@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: telegram-gifts-bot
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: python main.py
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: API_ID
+        sync: false
+      - key: API_HASH
+        sync: false
+      - key: BOT_TOKENS
+        sync: false
+      - key: NOTIFY_CHAT_ID
+        sync: false
+      - key: NOTIFY_UPGRADES_CHAT_ID
+        sync: false
+      - key: MAX_NOTIFICATIONS
+        value: 50
+      - key: NOTIFICATION_INTERVAL
+        value: 5.0
+      - key: CHECK_INTERVAL
+        value: 10.0
