@@ -9,13 +9,13 @@ from pathlib import Path
 
 # Базовые настройки Telegram API
 SESSION_NAME = os.getenv("SESSION_NAME", "gifts_monitor")
-API_ID = int(os.getenv("API_ID", "0"))
-API_HASH = os.getenv("API_HASH", "")
+API_ID = int(os.getenv("API_ID") or os.getenv("TELEGRAM_API_ID") or "0")
+API_HASH = os.getenv("API_HASH") or os.getenv("TELEGRAM_API_HASH") or ""
 
 # Токены ботов для отправки уведомлений
 BOT_TOKENS = [
-    token.strip() 
-    for token in os.getenv("BOT_TOKENS", "").split(",") 
+    token.strip()
+    for token in (os.getenv("BOT_TOKENS") or os.getenv("BOT_TOKEN") or "").split(",")
     if token.strip()
 ]
 
@@ -24,8 +24,8 @@ CHECK_INTERVAL = float(os.getenv("CHECK_INTERVAL", "10.0"))  # секунд ме
 CHECK_UPGRADES_PER_CYCLE = float(os.getenv("CHECK_UPGRADES_PER_CYCLE", "30.0"))  # проверка апгрейдов
 
 # Чаты для уведомлений
-NOTIFY_CHAT_ID = int(os.getenv("NOTIFY_CHAT_ID", "0"))  # Ваш chat_id
-NOTIFY_UPGRADES_CHAT_ID = int(os.getenv("NOTIFY_UPGRADES_CHAT_ID", "0")) if os.getenv("NOTIFY_UPGRADES_CHAT_ID") else None
+NOTIFY_CHAT_ID = int(os.getenv("NOTIFY_CHAT_ID") or "0")  # Ваш chat_id
+NOTIFY_UPGRADES_CHAT_ID = int(os.getenv("NOTIFY_UPGRADES_CHAT_ID") or "0") if os.getenv("NOTIFY_UPGRADES_CHAT_ID") else None
 
 # Настройки интенсивных уведомлений
 MAX_NOTIFICATIONS = int(os.getenv("MAX_NOTIFICATIONS", "50"))  # максимум уведомлений
@@ -51,8 +51,11 @@ NOTIFY_TEXT = """
 🚨 {title} 🚨
 
 № {number} (ID: <code>{id}</code>)
+
 {total_amount}{available_amount}{sold_out}
+
 💎 Цена: {price} ⭐️
+
 ♻️ Цена конвертации: {convert_price} ⭐️
 
 ⏰ ДЕЙСТВУЙ БЫСТРО!
@@ -66,7 +69,6 @@ NOTIFY_TEXT_TITLES = {
 NOTIFY_TEXT_TOTAL_AMOUNT = "\n🎯 Всего: {total_amount}"
 NOTIFY_TEXT_AVAILABLE_AMOUNT = "\n❓ Доступно: {available_amount} ({same_str}{available_percentage}%, обновлено {updated_datetime})\n"
 NOTIFY_TEXT_SOLD_OUT = "\n⏰ Распродано за {sold_out}\n"
-
 NOTIFY_UPGRADES_TEXT = "🎁 Подарок можно апгрейдить! (ID: <code>{id}</code>)"
 
 # Валидация конфигурации
@@ -87,13 +89,11 @@ def validate_config():
         errors.append("NOTIFY_CHAT_ID не задан")
     
     if errors:
-        raise ValueError(f"Ошибки конфигурации: {', '.join(errors)}")
+        print(f"⚠️ Предупреждение: {', '.join(errors)}")
+        return False
     
     return True
 
 # Автоматическая валидация при импорте
 if __name__ != "__main__":
-    try:
-        validate_config()
-    except ValueError as e:
-        print(f"⚠️ Предупреждение: {e}")
+    validate_config()
